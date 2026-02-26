@@ -1,8 +1,38 @@
 let fileInput = document.getElementById("dataset");
 let submitBtn = document.getElementById("submitBtn");
-let showDataDiv = document.getElementById("showData");
+let showDataTable = document.getElementById("showData");
 let rawCSVData = "";
 let parseJsonData = [];
+let column_names=[]
+function renderData() {
+	// creating table header
+		renderingTableHeading()
+	for (let data of parseJsonData) {
+		let currentRowElement = document.createElement("tr");
+		
+		
+		for (let key in data) {
+			let currentColumnElement = document.createElement("td");
+			if (data[key] instanceof Date) {
+				currentColumnElement.textContent = dateFormatString(data[key]);
+				currentRowElement.appendChild(currentColumnElement);
+				continue;
+			}
+			currentColumnElement.textContent = data[key];
+			currentRowElement.appendChild(currentColumnElement);
+		}
+		showDataTable.appendChild(currentRowElement);
+	}
+}
+function renderingTableHeading(){
+	let currentRowElement=document.createElement("tr")
+	column_names.forEach((data)=>{
+		let currentColumnElement=document.createElement("th")
+		currentColumnElement.textContent=data
+		currentRowElement.appendChild(currentColumnElement);
+	})
+	showDataTable.appendChild(currentRowElement);
+}
 submitBtn.addEventListener("click", (event) => {
 	let curFileInput = fileInput.files[0];
 	console.log(curFileInput);
@@ -23,7 +53,7 @@ submitBtn.addEventListener("click", (event) => {
 function parseCSVData() {
 	try {
 		let rowsOfData = rawCSVData.split("\n"); // splitting content on new line
-		let column_names = rowsOfData[0].split(","); // splitting the column names from the first row
+		column_names = rowsOfData[0].split(","); // splitting the column names from the first row
 		console.log(column_names);
 		// parsing data into json
 		for (let i = 1; i < rowsOfData.length - 1; i++) {
@@ -36,15 +66,16 @@ function parseCSVData() {
 					currentColumnEntry = parseDate(currentColumnEntry);
 				}
 				// current column Data is Number
-				else if (currentColumnEntry.match(/\d+.?\d+/)) {
+				else if (currentColumnEntry.match(/^\d+(\.\d+)?$/)) {
 					currentColumnEntry = parseFloat(currentColumnEntry);
 				}
 				curRowData[column_names[i]] = currentColumnEntry;
 			}
 			parseJsonData.push(curRowData);
 		}
-		JSON.stringify(parseJsonData);
-		console.log(parseJsonData);
+		// JSON.stringify(parseJsonData);
+		// console.log(parseJsonData);
+		renderData();
 	} catch (error) {
 		console.log(error.message);
 	}
@@ -68,4 +99,8 @@ function parseDate(dataString) {
 	}
 
 	throw new Error("Invalid Date Format");
+}
+function dateFormatString(dateObject) {
+	let formattedString = `${dateObject.getDate()}-${dateObject.getMonth() + 1}-${dateObject.getFullYear()}`;
+	return formattedString;
 }
