@@ -3,14 +3,56 @@ let submitBtn = document.getElementById("submitBtn");
 let showDataTable = document.getElementById("showData");
 let rawCSVData = "";
 let parseJsonData = [];
+let previousPageBtn=document.getElementById("previous")
+let nextPageBtn=document.getElementById("next")
 let column_names=[]
+let startRowCount=0;
+let rowsPerPage=document.getElementById("rowsCount")
+console.log(parseInt(rowsCount.value))
+rowsCount.addEventListener("change",(event)=>{
+	renderData()
+})
 function renderData() {
-	// creating table header
-		renderingTableHeading()
-	for (let data of parseJsonData) {
+    showDataTable.innerHTML = "";
+    renderingTableHeading();
+
+    let rowsPerPage = parseInt(rowsCount.value);
+    let endRowCount = Math.min(
+        startRowCount + rowsPerPage,
+        parseJsonData.length
+    );
+
+    renderRowsData(startRowCount, endRowCount);
+}
+previousPageBtn.addEventListener("click", () => {
+    let rowsPerPage = parseInt(rowsCount.value);
+
+    if (startRowCount === 0) {
+        return; // already at first page
+    }
+
+    startRowCount -= rowsPerPage;
+
+    if (startRowCount < 0) {
+        startRowCount = 0;
+    }
+
+    renderData();
+});
+nextPageBtn.addEventListener("click", () => {
+    let rowsPerPage = parseInt(rowsCount.value);
+
+    if (startRowCount + rowsPerPage >= parseJsonData.length) {
+        return; // already at last page
+    }
+
+    startRowCount += rowsPerPage;
+    renderData();
+});
+function renderRowsData(startIdx,endIdx){
+	for (let idx=startIdx;idx<endIdx;idx++) {
+		let data=parseJsonData[idx]
 		let currentRowElement = document.createElement("tr");
-		
-		
 		for (let key in data) {
 			let currentColumnElement = document.createElement("td");
 			if (data[key] instanceof Date) {
