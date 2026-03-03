@@ -3,55 +3,83 @@ let submitBtn = document.getElementById("submitBtn");
 let showDataTable = document.getElementById("showData");
 let rawCSVData = "";
 let parseJsonData = [];
-let previousPageBtn=document.getElementById("previous")
-let nextPageBtn=document.getElementById("next")
-let column_names=[]
-let startRowCount=0;
-let rowsPerPage=document.getElementById("rowsCount")
-console.log(parseInt(rowsCount.value))
-rowsCount.addEventListener("change",(event)=>{
-	renderData()
-})
+let previousPageBtn = document.getElementById("previous");
+let nextPageBtn = document.getElementById("next");
+let column_names = [];
+let startRowCount = 0;
+let rowsPerPage = document.getElementById("rowsCount");
+console.log(parseInt(rowsCount.value));
+showDataTable.addEventListener("click", (event) => {
+	console.log(event.target);
+	console.log(event.target.dataset.column);
+	sortDataColumn(event.target.dataset.column, event.target.dataset.order);
+	// event.stopPropagation();
+});
+function compareStrings(str1, str2) {
+	return str1.toLowerCase().localeCompare(str2.toLowerCase());
+}
+function sortDataColumn(columnName,order) {
+    parseJsonData.sort((a, b) => {
+        let valueA = a[columnName];
+        let valueB = b[columnName];
+
+        if (typeof valueA === "string" && typeof valueB === "string") {
+            return order === "ascending"
+                ? valueA.localeCompare(valueB)
+                : valueB.localeCompare(valueA);
+        }
+
+        return order === "ascending"
+            ? valueA - valueB
+            : valueB - valueA;
+    });
+
+    startRowCount = 0;
+    renderData();
+}
+rowsCount.addEventListener("change", (event) => {
+	renderData();
+});
 function renderData() {
-    showDataTable.innerHTML = "";
-    renderingTableHeading();
+	showDataTable.innerHTML = "";
+	renderingTableHeading();
 
-    let rowsPerPage = parseInt(rowsCount.value);
-    let endRowCount = Math.min(
-        startRowCount + rowsPerPage,
-        parseJsonData.length
-    );
+	let rowsPerPage = parseInt(rowsCount.value);
+	let endRowCount = Math.min(
+		startRowCount + rowsPerPage,
+		parseJsonData.length,
+	);
 
-    renderRowsData(startRowCount, endRowCount);
+	renderRowsData(startRowCount, endRowCount);
 }
 previousPageBtn.addEventListener("click", () => {
-    let rowsPerPage = parseInt(rowsCount.value);
+	let rowsPerPage = parseInt(rowsCount.value);
 
-    if (startRowCount === 0) {
-        return; // already at first page
-    }
+	if (startRowCount === 0) {
+		return; // already at first page
+	}
 
-    startRowCount -= rowsPerPage;
+	startRowCount -= rowsPerPage;
 
-    if (startRowCount < 0) {
-        startRowCount = 0;
-    }
+	if (startRowCount < 0) {
+		startRowCount = 0;
+	}
 
-    renderData();
+	renderData();
 });
 nextPageBtn.addEventListener("click", () => {
-    let rowsPerPage = parseInt(rowsCount.value);
+	let rowsPerPage = parseInt(rowsCount.value);
 
-    if (startRowCount + rowsPerPage >= parseJsonData.length) {
-        return; // already at last page
-    }
+	if (startRowCount + rowsPerPage >= parseJsonData.length) {
+		return; // already at last page
+	}
 
-    startRowCount += rowsPerPage;
-    renderData();
+	startRowCount += rowsPerPage;
+	renderData();
 });
-function renderRowsData(startIdx,endIdx){
-	for (let idx=startIdx;idx<endIdx;idx++) {
-		let data=parseJsonData[idx]
+function renderRowsData(startIdx, endIdx) {
+	for (let idx = startIdx; idx < endIdx; idx++) {
+		let data = parseJsonData[idx];
 		let currentRowElement = document.createElement("tr");
 		for (let key in data) {
 			let currentColumnElement = document.createElement("td");
@@ -66,13 +94,21 @@ function renderRowsData(startIdx,endIdx){
 		showDataTable.appendChild(currentRowElement);
 	}
 }
-function renderingTableHeading(){
-	let currentRowElement=document.createElement("tr")
-	column_names.forEach((data)=>{
-		let currentColumnElement=document.createElement("th")
-		currentColumnElement.textContent=data
+function renderingTableHeading() {
+	let currentRowElement = document.createElement("tr");
+	column_names.forEach((data) => {
+		let currentColumnElement = document.createElement("th");
+		let headingContainer = document.createElement("div");
+		headingContainer.classList.add("heading-container");
+		const columnNameContainer = document.createElement("div");
+		columnNameContainer.textContent = data;
+		currentColumnElement.dataset.column = data;
+		headingContainer.appendChild(columnNameContainer);
+		headingContainer.appendChild(sortingButton(data));
+		console.log(headingContainer);
+		currentColumnElement.appendChild(headingContainer);
 		currentRowElement.appendChild(currentColumnElement);
-	})
+	});
 	showDataTable.appendChild(currentRowElement);
 }
 submitBtn.addEventListener("click", (event) => {
@@ -145,4 +181,18 @@ function parseDate(dataString) {
 function dateFormatString(dateObject) {
 	let formattedString = `${dateObject.getDate()}-${dateObject.getMonth() + 1}-${dateObject.getFullYear()}`;
 	return formattedString;
+}
+function sortingButton(columnName) {
+	const mainContainer = document.createElement("div");
+	const sortUpButton = document.createElement("i");
+	const sortDownButton = document.createElement("i");
+	sortDownButton.classList.add("fa-solid", "fa-sort-down");
+	sortUpButton.classList.add("fa-solid", "fa-sort-up");
+	sortUpButton.dataset.column = columnName;
+	sortDownButton.dataset.column = columnName;
+	sortUpButton.dataset.order = "ascending";
+	sortDownButton.dataset.order = "descending";
+	mainContainer.appendChild(sortUpButton);
+	mainContainer.appendChild(sortDownButton);
+	return mainContainer;
 }

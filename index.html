@@ -9,24 +9,31 @@
 			href="https://lunch-app.simform.solutions/Images/favicon.ico"
 		/>
 		<link rel="stylesheet" href="style.css" />
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+			integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+			crossorigin="anonymous"
+			referrerpolicy="no-referrer"
+		/>
+
 		<!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
 		<title>CSV Data Explorer</title>
 	</head>
 	<body>
+		
 		<!-- Taking file as input -->
 		<input type="file" name="dataset" id="dataset" />
 		<button id="submitBtn">Submit</button>
-        <h1 >This is the text Element </h1>
+		<h1>This is the text Element</h1>
 		<select name="rowsCount" id="rowsCount">
-			<option value="10">10</option>	
+			<option value="10">10</option>
 			<option value="50">50</option>
 			<option value="100">100</option>
 		</select>
 		<button id="previous">Prev</button>
 		<button id="next">Next</button>
-		<table id="showData">
-			
-		</table>
+		<table id="showData"></table>
 		<script src="script.js"></script>
 	</body>
 </html>
