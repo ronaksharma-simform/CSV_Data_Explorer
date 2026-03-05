@@ -14,7 +14,7 @@ thead {
 
 th {
   padding: 12px;
-  text-align: left;
+  text-align: center;
   border-bottom: 2px solid #ddd;
   font-weight: bold;
 }
@@ -41,4 +41,7 @@ tbody tr:hover {
   justify-content: center;
   align-items: center;
   gap: 5px;
+}
+#columnsSelectionContainer{
+  display: none;
 }

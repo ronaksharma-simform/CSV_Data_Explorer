@@ -6,26 +6,58 @@ let parseJsonData = [];
 let previousPageBtn = document.getElementById("previous");
 let nextPageBtn = document.getElementById("next");
 let column_names = [];
+let excludeColumns = [];
 let startRowCount = 0;
 let rowsPerPage = document.getElementById("rowsCount");
-let filterInput=document.getElementById("filter")
-let filterButton=document.getElementById("filterSubmit")
-let resetFilterButton=document.getElementById("resetFilter")
-let mainData=[]
-console.log(parseInt(rowsCount.value));
-resetFilterButton.addEventListener("click",(event)=>{
-	parseJsonData=mainData;
-	startRowCount=0;
+let filterInput = document.getElementById("filter");
+let filterButton = document.getElementById("filterSubmit");
+let resetFilterButton = document.getElementById("resetFilter");
+let columnSelectionButton = document.getElementById("columnSelection");
+let columnsSelectionContainer = document.getElementById(
+	"columnsSelectionContainer",
+);
+let mainData = [];
+columnSelectionButton.addEventListener("click", (event) => {
+	let isHidden =
+		columnsSelectionContainer.style.display === "none" ||
+		columnsSelectionContainer.style.display === "";
+	console.log(columnsSelectionContainer.style.display);
+	if (isHidden) {
+		columnsSelectionContainer.style.display = "block";
+	} else {
+		columnsSelectionContainer.style.display = "none";
+	}
+});
+resetFilterButton.addEventListener("click", (event) => {
+	parseJsonData = mainData;
+	startRowCount = 0;
 	renderData();
-	console.log(event)
-})
-filterButton.addEventListener("click",(event)=>{
-	console.log(filterInput.value)
-	parseJsonData=filterData(filterInput.value)
-	startRowCount=0;
+	console.log(event);
+});
+filterButton.addEventListener("click", (event) => {
+	console.log(filterInput.value);
+	parseJsonData = filterData(filterInput.value);
+	startRowCount = 0;
 	renderData();
 	event.stopImmediatePropagation();
-})
+});
+columnsSelectionContainer.addEventListener("click", (event) => {
+	if (event.target.tagName === "INPUT") {
+		let currentColumnName = event.target.id;
+		console.log(event.target);
+		if (excludeColumns.includes(currentColumnName)) {
+			excludeColumns.splice(
+				excludeColumns.findIndex((value) => currentColumnName),
+				1,
+			);
+			console.log("dONE");
+		} else {
+			excludeColumns.push(currentColumnName);
+		}
+		console.log(excludeColumns);
+	}
+	renderData();
+});
 showDataTable.addEventListener("click", (event) => {
 	console.log(event.target);
 	console.log(event.target.dataset.column);
@@ -35,28 +67,26 @@ showDataTable.addEventListener("click", (event) => {
 function compareStrings(str1, str2) {
 	return str1.toLowerCase().localeCompare(str2.toLowerCase());
 }
-function sortDataColumn(columnName,order) {
-    parseJsonData.sort((a, b) => {
-        let valueA = a[columnName];
-        let valueB = b[columnName];
+function sortDataColumn(columnName, order) {
+	parseJsonData.sort((a, b) => {
+		let valueA = a[columnName];
+		let valueB = b[columnName];
 
-        if (typeof valueA === "string" && typeof valueB === "string") {
-            return order === "ascending"
-                ? valueA.localeCompare(valueB)
-                : valueB.localeCompare(valueA);
-        }
+		if (typeof valueA === "string" && typeof valueB === "string") {
+			return order === "ascending"
+				? valueA.localeCompare(valueB)
+				: valueB.localeCompare(valueA);
+		}
 
-        return order === "ascending"
-            ? valueA - valueB
-            : valueB - valueA;
-    });
+		return order === "ascending" ? valueA - valueB : valueB - valueA;
+	});
 
-    startRowCount = 0;
-    renderData();
+	startRowCount = 0;
+	renderData();
 }
 rowsCount.addEventListener("change", (event) => {
 	renderData();
-}); 
+});
 function renderData() {
 	showDataTable.innerHTML = "";
 	renderingTableHeading();
@@ -99,14 +129,18 @@ function renderRowsData(startIdx, endIdx) {
 		let data = parseJsonData[idx];
 		let currentRowElement = document.createElement("tr");
 		for (let key in data) {
-			let currentColumnElement = document.createElement("td");
-			if (data[key] instanceof Date) {
-				currentColumnElement.textContent = dateFormatString(data[key]);
+			if (!excludeColumns.includes(key)) {
+				let currentColumnElement = document.createElement("td");
+				if (data[key] instanceof Date) {
+					currentColumnElement.textContent = dateFormatString(
+						data[key],
+					);
+					currentRowElement.appendChild(currentColumnElement);
+					continue;
+				}
+				currentColumnElement.textContent = data[key];
 				currentRowElement.appendChild(currentColumnElement);
-				continue;
 			}
-			currentColumnElement.textContent = data[key];
-			currentRowElement.appendChild(currentColumnElement);
 		}
 		showDataTable.appendChild(currentRowElement);
 	}
@@ -114,16 +148,18 @@ function renderRowsData(startIdx, endIdx) {
 function renderingTableHeading() {
 	let currentRowElement = document.createElement("tr");
 	column_names.forEach((data) => {
-		let currentColumnElement = document.createElement("th");
-		let headingContainer = document.createElement("div");
-		headingContainer.classList.add("heading-container");
-		const columnNameContainer = document.createElement("div");
-		columnNameContainer.textContent = data;
-		currentColumnElement.dataset.column = data;
-		headingContainer.appendChild(columnNameContainer);
-		headingContainer.appendChild(sortingButton(data));
-		currentColumnElement.appendChild(headingContainer);
-		currentRowElement.appendChild(currentColumnElement);
+		if (!excludeColumns.includes(data)) {
+			let currentColumnElement = document.createElement("th");
+			let headingContainer = document.createElement("div");
+			headingContainer.classList.add("heading-container");
+			const columnNameContainer = document.createElement("div");
+			columnNameContainer.textContent = data;
+			currentColumnElement.dataset.column = data;
+			headingContainer.appendChild(columnNameContainer);
+			headingContainer.appendChild(sortingButton(data));
+			currentColumnElement.appendChild(headingContainer);
+			currentRowElement.appendChild(currentColumnElement);
+		}
 	});
 	showDataTable.appendChild(currentRowElement);
 }
@@ -169,7 +205,8 @@ function parseCSVData() {
 		}
 		// JSON.stringify(parseJsonData);
 		// console.log(parseJsonData);
-		mainData=parseJsonData;
+		mainData = parseJsonData;
+		createColumnSelectionCheckbox();
 		renderData();
 	} catch (error) {
 		console.log(error.message);
@@ -214,28 +251,48 @@ function sortingButton(columnName) {
 	return mainContainer;
 }
 function filterData(query) {
-    if (!query || !query.trim()) {
-        return mainData;
-    }
+	if (!query || !query.trim()) {
+		return mainData;
+	}
 
-    let filteredData = [];
+	let filteredData = [];
 
-    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    let Regex = new RegExp(escapedQuery, "i");
+	const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	let Regex = new RegExp(escapedQuery, "i");
 
-    mainData.forEach((curRowData) => {
-        for (let key in curRowData) {
-            let value = curRowData[key];
+	mainData.forEach((curRowData) => {
+		for (let key in curRowData) {
+			if (!excludeColumns.includes(key)) {
+				let value = curRowData[key];
 
-            if (value !== null && value !== undefined) {
-                if (Regex.test(value.toString())) {
-                    filteredData.push(curRowData);
-                    break;
-                }
-            }
-        }
-    });
-	console.log(filteredData)
-	
-    return filteredData;
+				if (value !== null && value !== undefined) {
+					if (Regex.test(value.toString())) {
+						filteredData.push(curRowData);
+						break;
+					}
+				}
+			}
+		}
+	});
+	console.log(filteredData);
+
+	return filteredData;
+}
+function temp(event) {
+	console.log(event);
+}
+function createColumnSelectionCheckbox() {
+	for (let names of column_names) {
+		let labelForColumn = document.createElement("label");
+		let checkboxForColumn = document.createElement("input");
+		labelForColumn.setAttribute("for", names);
+		checkboxForColumn.setAttribute("name", "columns");
+		checkboxForColumn.setAttribute("type", "checkbox");
+		checkboxForColumn.setAttribute("id", names);
+		checkboxForColumn.setAttribute("checked",true)
+		labelForColumn.appendChild(checkboxForColumn);
+		labelForColumn.innerHTML += names.toUpperCase();
+		columnsSelectionContainer.appendChild(labelForColumn);
+		console.log(labelForColumn);
+	}
 }
