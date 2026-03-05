@@ -45,3 +45,16 @@ tbody tr:hover {
 #columnsSelectionContainer{
   display: none;
 }
+.modal-popup{
+  position: absolute;
+  background-color: red;
+  display: flex;
+  flex-direction: column;
+  top: 40%;
+  left: 40%;
+  padding: 20px;
+}
+#close-modal{
+ text-align: right;
+  display: inline;
+}
