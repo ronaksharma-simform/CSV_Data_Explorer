@@ -8,7 +8,24 @@ let nextPageBtn = document.getElementById("next");
 let column_names = [];
 let startRowCount = 0;
 let rowsPerPage = document.getElementById("rowsCount");
+let filterInput=document.getElementById("filter")
+let filterButton=document.getElementById("filterSubmit")
+let resetFilterButton=document.getElementById("resetFilter")
+let mainData=[]
 console.log(parseInt(rowsCount.value));
+resetFilterButton.addEventListener("click",(event)=>{
+	parseJsonData=mainData;
+	startRowCount=0;
+	renderData();
+	console.log(event)
+})
+filterButton.addEventListener("click",(event)=>{
+	console.log(filterInput.value)
+	parseJsonData=filterData(filterInput.value)
+	startRowCount=0;
+	renderData();
+	event.stopImmediatePropagation();
+})
 showDataTable.addEventListener("click", (event) => {
 	console.log(event.target);
 	console.log(event.target.dataset.column);
@@ -39,7 +56,7 @@ function sortDataColumn(columnName,order) {
 }
 rowsCount.addEventListener("change", (event) => {
 	renderData();
-});
+}); 
 function renderData() {
 	showDataTable.innerHTML = "";
 	renderingTableHeading();
@@ -105,7 +122,6 @@ function renderingTableHeading() {
 		currentColumnElement.dataset.column = data;
 		headingContainer.appendChild(columnNameContainer);
 		headingContainer.appendChild(sortingButton(data));
-		console.log(headingContainer);
 		currentColumnElement.appendChild(headingContainer);
 		currentRowElement.appendChild(currentColumnElement);
 	});
@@ -153,6 +169,7 @@ function parseCSVData() {
 		}
 		// JSON.stringify(parseJsonData);
 		// console.log(parseJsonData);
+		mainData=parseJsonData;
 		renderData();
 	} catch (error) {
 		console.log(error.message);
@@ -195,4 +212,30 @@ function sortingButton(columnName) {
 	mainContainer.appendChild(sortUpButton);
 	mainContainer.appendChild(sortDownButton);
 	return mainContainer;
+}
+function filterData(query) {
+    if (!query || !query.trim()) {
+        return mainData;
+    }
+
+    let filteredData = [];
+
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    let Regex = new RegExp(escapedQuery, "i");
+
+    mainData.forEach((curRowData) => {
+        for (let key in curRowData) {
+            let value = curRowData[key];
+
+            if (value !== null && value !== undefined) {
+                if (Regex.test(value.toString())) {
+                    filteredData.push(curRowData);
+                    break;
+                }
+            }
+        }
+    });
+	console.log(filteredData)
+	
+    return filteredData;
 }

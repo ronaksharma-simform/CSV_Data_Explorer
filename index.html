@@ -21,10 +21,17 @@
 		<title>CSV Data Explorer</title>
 	</head>
 	<body>
-		
 		<!-- Taking file as input -->
 		<input type="file" name="dataset" id="dataset" />
 		<button id="submitBtn">Submit</button>
+		<input
+			type="text"
+			placeholder="Enter Search Query"
+			id="filter"
+			name="filter"
+		/>
+		<button id="filterSubmit">Filter</button>
+		<button id="resetFilter">Reset</button>
 		<h1>This is the text Element</h1>
 		<select name="rowsCount" id="rowsCount">
 			<option value="10">10</option>
