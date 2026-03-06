@@ -6,7 +6,7 @@ const filterData = (query, mainData, excludeColumns) => {
 	let filteredData = [];
 
 	const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-	let Regex = new RegExp(escapedQuery, "i");
+	let Regex = new RegExp(escapedQuery, "ig");
 
 	mainData.forEach((curRowData) => {
 		for (let key in curRowData) {

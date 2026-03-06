@@ -6,7 +6,8 @@ export default function renderTable(
 	rowsCount,
 	hiddenColumn,
 	isSelectMode,
-	selectedRowIndex
+	selectedRowIndex,
+	lastSearchQuery,
 ) {
 	// empty table content
 	tableElement.innerHTML = "";
@@ -21,7 +22,8 @@ export default function renderTable(
 		data,
 		hiddenColumn,
 		isSelectMode,
-		selectedRowIndex
+		selectedRowIndex,
+		lastSearchQuery,
 	);
 }
 
@@ -68,7 +70,8 @@ export const renderRowsData = (
 	parseJsonData,
 	hiddenColumn,
 	isSelectMode,
-	selectedRowIndex
+	selectedRowIndex,
+	lastSearchQuery,
 ) => {
 	for (let idx = startRowCount; idx < endRowCount; idx++) {
 		let data = parseJsonData[idx];
@@ -76,7 +79,7 @@ export const renderRowsData = (
 		currentRowElement.classList.add("row-data");
 		let selectionCheckbox = document.createElement("input");
 		selectionCheckbox.type = "checkbox";
-		
+
 		selectionCheckbox.style.display =
 			isSelectMode === true ? "block" : "none";
 		selectionCheckbox.classList.add("selection-row");
@@ -85,18 +88,24 @@ export const renderRowsData = (
 			if (key === "id") {
 				selectionCheckbox.id = data[key];
 				currentRowElement.dataset.id = data[key];
-				if(selectedRowIndex.includes(String(data[key]))) selectionCheckbox.setAttribute("checked", "true");
+				if (selectedRowIndex.includes(String(data[key])))
+					selectionCheckbox.setAttribute("checked", "true");
 			}
 			if (!hiddenColumn.includes(key)) {
 				let currentColumnElement = document.createElement("td");
 				if (data[key] instanceof Date) {
-					currentColumnElement.textContent = dateFormatString(
-						data[key],
+					currentColumnElement.innerHTML = highlightText(
+						dateFormatString(data[key]),
+						lastSearchQuery,
 					);
+
 					currentRowElement.appendChild(currentColumnElement);
 					continue;
 				}
-				currentColumnElement.textContent = data[key];
+				currentColumnElement.innerHTML = highlightText(
+					data[key],
+					lastSearchQuery,
+				);
 				currentRowElement.appendChild(currentColumnElement);
 			}
 		}
@@ -106,4 +115,15 @@ export const renderRowsData = (
 export const dateFormatString = (dateObject) => {
 	let formattedString = `${dateObject.getDate()}-${dateObject.getMonth() + 1}-${dateObject.getFullYear()}`;
 	return formattedString;
+};
+export const highlightText = (text, query) => {
+	if (!query) return text;
+
+	const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const regex = new RegExp(`(${escapedQuery})`, "ig");
+
+	const temp = text
+		.toString()
+		.replace(regex, (match) => `<mark>${match}</mark>`);
+	return temp;
 };
