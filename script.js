@@ -107,19 +107,14 @@ showDataTable.addEventListener("mouseup", (event) => {
 			console.log("Middle button clicked.");
 			break;
 		case 2:
-			event.preventDefault()
+			dataTable.selectedRowIndex=[]
 			console.log("Right button clicked.");
 			dataTable.isSelectMode= dataTable.isSelectMode===false?true:false
-			document
-				.querySelectorAll(".selection-row")
-				.forEach((rowSelection) => {
-					rowSelection.style.display =
-						rowSelection.style.display === "none" ||
-						rowSelection.style.display === ""
+			dataTable.renderData()
+			deleteRowsButton.style.display = deleteRowsButton.style.display === "none" ||
+						deleteRowsButton.style.display === ""
 							? "inline-block"
 							: "none";
-				});
-			deleteRowsButton.style.display = "block";
 			
 			break;
 	}

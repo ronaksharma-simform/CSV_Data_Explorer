@@ -69,7 +69,7 @@ class DataTable {
 		this.parseJsonData = this.parseJsonData.filter(
 			(data) => !this.selectedRowIndex.includes(String(data.id)),
 		);
-		console.log(this.parseJsonData);
+		this.selectedRowIndex=[]
 		this.filteredData = this.parseJsonData;
 		this.page = 0;
 		this.renderData();
