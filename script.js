@@ -1,4 +1,5 @@
 import DataTable from "./src/DataTable.js";
+import {exportDataAsCSV,exportDataAsJSON} from "./src/exportData.js";
 import showDataModal from "./src/modalPanel.js";
 
 let fileInput = document.getElementById("dataset");
@@ -18,7 +19,8 @@ let deleteRowsButton = document.getElementById("deleteRows");
 let filterButton = document.getElementById("filterSubmit");
 let resetFilterButton = document.getElementById("resetFilter");
 let columnSelectionButton = document.getElementById("columnSelection");
-
+let exportJSON=document.getElementById("exportJSON")
+let exportCSV=document.getElementById("exportCSV")
 
 let columnsSelectionContainer = document.getElementById(
 	"columnsSelectionContainer",
@@ -26,6 +28,12 @@ let columnsSelectionContainer = document.getElementById(
 deleteRowsButton.addEventListener("click", (event) => {
 	dataTable.removeMultipleRows();
 });
+exportCSV.addEventListener("click",(event)=>{
+	exportDataAsCSV(dataTable.columns,dataTable.filteredData)
+})
+exportJSON.addEventListener("click",(event)=>{
+	exportDataAsJSON(dataTable.filteredData)
+})
 let mainData = [];
 const dataTable = new DataTable(showDataTable, rowsPerPage);
 showDataTable.addEventListener("contextmenu", function (e) {
