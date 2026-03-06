@@ -6,6 +6,7 @@ import renderTable, {
 	renderingTableHeading,
 	renderRowsData,
 	sortingButton,
+	highlightText	
 } from "./tableRender.js";
 
 class DataTable {
@@ -40,6 +41,7 @@ class DataTable {
 			this.hiddenColumn,
 			this.isSelectMode,
 			this.selectedRowIndex,
+			this.lastSearchQuery
 		);
 		this.storeDataLocally();
 	}

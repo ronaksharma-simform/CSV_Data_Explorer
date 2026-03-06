@@ -1,4 +1,5 @@
 import DataTable from "./src/DataTable.js";
+import debounce from "./src/debounce.js";
 import { exportDataAsCSV, exportDataAsJSON } from "./src/exportData.js";
 import showDataModal from "./src/modalPanel.js";
 
@@ -50,6 +51,12 @@ renderData();
 showDataTable.addEventListener("contextmenu", function (e) {
 	e.preventDefault();
 });
+const filteredDataFunction=(event)=>{
+	dataTable.filterColumnData(filterInput.value);
+	renderData();
+	event.stopImmediatePropagation();
+}
+const debounceFilter=debounce(filteredDataFunction,300)
 columnSelectionButton.addEventListener("click", (event) => {
 	let isHidden =
 		columnsSelectionContainer.style.display === "none" ||
@@ -64,7 +71,7 @@ columnSelectionButton.addEventListener("click", (event) => {
 resetFilterButton.addEventListener("click", (event) => {
 	dataTable.filteredData = dataTable.parseJsonData;
 	dataTable.lastSearchQuery = "";
-	filterInput.value = "	";
+	filterInput.value = "";
 	dataTable.page = 0;
 	renderData();
 });
@@ -75,6 +82,7 @@ filterButton.addEventListener("click", (event) => {
 	renderData();
 	event.stopImmediatePropagation();
 });
+filterInput.addEventListener("input",debounceFilter)
 columnsSelectionContainer.addEventListener("click", (event) => {
 	if (event.target.tagName === "INPUT") {
 		let currentColumnName = event.target.id;
