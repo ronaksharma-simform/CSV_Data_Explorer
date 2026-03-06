@@ -18,6 +18,8 @@ class DataTable {
 		this.rowsPerPage = rowsPerPage;
 		this.hiddenColumn = [];
 		this.lastSortColumnData = {};
+		this.selectedRowIndex = [];
+		this.isSelectMode = false;
 	}
 	parseData(rawCSVData) {
 		const result = parseCSVData(rawCSVData);
@@ -33,6 +35,8 @@ class DataTable {
 			this.page,
 			this.rowsPerPage,
 			this.hiddenColumn,
+			this.isSelectMode,
+			this.selectedRowIndex
 		);
 	}
 	sortColumnData(columnName, order) {
@@ -57,6 +61,16 @@ class DataTable {
 				this.lastSortColumnData.order,
 			);
 		}
+		this.page = 0;
+		this.renderData();
+	}
+	removeMultipleRows() {
+
+		this.parseJsonData = this.parseJsonData.filter(
+			(data) => !this.selectedRowIndex.includes(String(data.id)),
+		);
+		console.log(this.parseJsonData);
+		this.filteredData = this.parseJsonData;
 		this.page = 0;
 		this.renderData();
 	}

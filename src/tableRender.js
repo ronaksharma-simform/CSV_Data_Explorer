@@ -5,14 +5,24 @@ export default function renderTable(
 	startRowCount,
 	rowsCount,
 	hiddenColumn,
+	isSelectMode,
+	selectedRowIndex
 ) {
 	// empty table content
 	tableElement.innerHTML = "";
-	renderingTableHeading(tableElement, column_names,hiddenColumn);
+	renderingTableHeading(tableElement, column_names, hiddenColumn);
 	const rowsPerPage = parseInt(rowsCount.value);
 	const endRowCount = Math.min(startRowCount + rowsPerPage, data.length);
 
-	renderRowsData(tableElement, startRowCount, endRowCount, data,hiddenColumn);
+	renderRowsData(
+		tableElement,
+		startRowCount,
+		endRowCount,
+		data,
+		hiddenColumn,
+		isSelectMode,
+		selectedRowIndex
+	);
 }
 
 export const renderingTableHeading = (
@@ -57,14 +67,25 @@ export const renderRowsData = (
 	endRowCount,
 	parseJsonData,
 	hiddenColumn,
+	isSelectMode,
+	selectedRowIndex
 ) => {
 	for (let idx = startRowCount; idx < endRowCount; idx++) {
 		let data = parseJsonData[idx];
 		let currentRowElement = document.createElement("tr");
 		currentRowElement.classList.add("row-data");
+		let selectionCheckbox = document.createElement("input");
+		selectionCheckbox.type = "checkbox";
+		
+		selectionCheckbox.style.display =
+			isSelectMode === true ? "block" : "none";
+		selectionCheckbox.classList.add("selection-row");
+		currentRowElement.appendChild(selectionCheckbox);
 		for (let key in data) {
 			if (key === "id") {
+				selectionCheckbox.id = data[key];
 				currentRowElement.dataset.id = data[key];
+				if(selectedRowIndex.includes(String(data[key]))) selectionCheckbox.setAttribute("checked", "true");
 			}
 			if (!hiddenColumn.includes(key)) {
 				let currentColumnElement = document.createElement("td");

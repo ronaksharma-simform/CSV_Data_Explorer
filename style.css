@@ -58,3 +58,6 @@ tbody tr:hover {
  text-align: right;
   display: inline;
 }
+#deleteRows{
+  display: none;
+}
