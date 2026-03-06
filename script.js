@@ -12,14 +12,22 @@ let excludeColumns = [];
 let startRowCount = 0;
 let rowsPerPage = document.getElementById("rowsCount");
 let filterInput = document.getElementById("filter");
+let deleteRowsButton = document.getElementById("deleteRows");
 let filterButton = document.getElementById("filterSubmit");
 let resetFilterButton = document.getElementById("resetFilter");
 let columnSelectionButton = document.getElementById("columnSelection");
+
 let columnsSelectionContainer = document.getElementById(
 	"columnsSelectionContainer",
 );
+deleteRowsButton.addEventListener("click",(event)=>{
+	dataTable.removeMultipleRows()
+})
 let mainData = [];
 const dataTable = new DataTable(showDataTable, rowsPerPage);
+showDataTable.addEventListener("contextmenu", function (e) {
+  e.preventDefault();
+});
 columnSelectionButton.addEventListener("click", (event) => {
 	let isHidden =
 		columnsSelectionContainer.style.display === "none" ||
@@ -61,6 +69,18 @@ columnsSelectionContainer.addEventListener("click", (event) => {
 
 showDataTable.addEventListener("click", (event) => {
 	console.log(event.target);
+	if(event.target.tagName==="INPUT"){
+		if(event.target.checked === true){
+			dataTable.selectedRowIndex.push(event.target.id)
+		}
+		else{
+			let findIndex=dataTable.selectedRowIndex.findIndex((x)=>event.target.id)
+			if(findIndex!==-1){
+				dataTable.selectedRowIndex.splice(findIndex,1);
+			}
+		}
+		console.log(dataTable.selectedRowIndex)
+	}
 	let clickedRow = event.target.closest(".row-data");
 	if (event.target.dataset.column) {
 		dataTable.sortColumnData(
@@ -73,11 +93,32 @@ showDataTable.addEventListener("click", (event) => {
 		return;
 	}
 	if (clickedRow) {
-		console.log(parseJsonData[clickedRow.dataset.id]);
+		console.log(dataTable.parseJsonData[clickedRow.dataset.id]);
+		console.log("Yes");
 	}
 	// event.stopPropagation();
 });
-
+showDataTable.addEventListener("mouseup", (event) => {
+	switch (event.button) {
+		case 0:
+			console.log("Left button clicked.");
+			break;
+		case 1:
+			console.log("Middle button clicked.");
+			break;
+		case 2:
+			dataTable.selectedRowIndex=[]
+			console.log("Right button clicked.");
+			dataTable.isSelectMode= dataTable.isSelectMode===false?true:false
+			dataTable.renderData()
+			deleteRowsButton.style.display = deleteRowsButton.style.display === "none" ||
+						deleteRowsButton.style.display === ""
+							? "inline-block"
+							: "none";
+			
+			break;
+	}
+});
 rowsCount.addEventListener("change", (event) => {
 	renderData();
 	console.log(dataTable.rowsPerPage);
