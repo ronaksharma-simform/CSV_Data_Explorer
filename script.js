@@ -3,6 +3,7 @@ import DataTable from "./src/DataTable.js";
 let fileInput = document.getElementById("dataset");
 let submitBtn = document.getElementById("submitBtn");
 let showDataTable = document.getElementById("showData");
+let pageNumberContainer = document.getElementById("page-number");
 let rawCSVData = "";
 let parseJsonData = [];
 let previousPageBtn = document.getElementById("previous");
@@ -20,13 +21,13 @@ let columnSelectionButton = document.getElementById("columnSelection");
 let columnsSelectionContainer = document.getElementById(
 	"columnsSelectionContainer",
 );
-deleteRowsButton.addEventListener("click",(event)=>{
-	dataTable.removeMultipleRows()
-})
+deleteRowsButton.addEventListener("click", (event) => {
+	dataTable.removeMultipleRows();
+});
 let mainData = [];
 const dataTable = new DataTable(showDataTable, rowsPerPage);
 showDataTable.addEventListener("contextmenu", function (e) {
-  e.preventDefault();
+	e.preventDefault();
 });
 columnSelectionButton.addEventListener("click", (event) => {
 	let isHidden =
@@ -42,11 +43,12 @@ columnSelectionButton.addEventListener("click", (event) => {
 resetFilterButton.addEventListener("click", (event) => {
 	dataTable.filteredData = dataTable.parseJsonData;
 	dataTable.page = 0;
-	dataTable.renderData();
+	renderData();
 });
 filterButton.addEventListener("click", (event) => {
 	console.log(filterInput.value);
 	dataTable.filterColumnData(filterInput.value);
+	renderData();
 	event.stopImmediatePropagation();
 });
 columnsSelectionContainer.addEventListener("click", (event) => {
@@ -64,22 +66,23 @@ columnsSelectionContainer.addEventListener("click", (event) => {
 		}
 		console.log(dataTable.hiddenColumn);
 	}
-	dataTable.renderData();
+	renderData();
 });
 
 showDataTable.addEventListener("click", (event) => {
 	console.log(event.target);
-	if(event.target.tagName==="INPUT"){
-		if(event.target.checked === true){
-			dataTable.selectedRowIndex.push(event.target.id)
-		}
-		else{
-			let findIndex=dataTable.selectedRowIndex.findIndex((x)=>event.target.id)
-			if(findIndex!==-1){
-				dataTable.selectedRowIndex.splice(findIndex,1);
+	if (event.target.tagName === "INPUT") {
+		if (event.target.checked === true) {
+			dataTable.selectedRowIndex.push(event.target.id);
+		} else {
+			let findIndex = dataTable.selectedRowIndex.findIndex(
+				(x) => event.target.id,
+			);
+			if (findIndex !== -1) {
+				dataTable.selectedRowIndex.splice(findIndex, 1);
 			}
 		}
-		console.log(dataTable.selectedRowIndex)
+		console.log(dataTable.selectedRowIndex);
 	}
 	let clickedRow = event.target.closest(".row-data");
 	if (event.target.dataset.column) {
@@ -88,7 +91,7 @@ showDataTable.addEventListener("click", (event) => {
 			event.target.dataset.order,
 		);
 		dataTable.page = 0;
-		dataTable.renderData();
+		renderData();
 		// sortDataColumn(event.target.dataset.column, event.target.dataset.order);
 		return;
 	}
@@ -107,15 +110,17 @@ showDataTable.addEventListener("mouseup", (event) => {
 			console.log("Middle button clicked.");
 			break;
 		case 2:
-			dataTable.selectedRowIndex=[]
+			dataTable.selectedRowIndex = [];
 			console.log("Right button clicked.");
-			dataTable.isSelectMode= dataTable.isSelectMode===false?true:false
-			dataTable.renderData()
-			deleteRowsButton.style.display = deleteRowsButton.style.display === "none" ||
-						deleteRowsButton.style.display === ""
-							? "inline-block"
-							: "none";
-			
+			dataTable.isSelectMode =
+				dataTable.isSelectMode === false ? true : false;
+			renderData();
+			deleteRowsButton.style.display =
+				deleteRowsButton.style.display === "none" ||
+				deleteRowsButton.style.display === ""
+					? "inline-block"
+					: "none";
+
 			break;
 	}
 });
@@ -123,7 +128,23 @@ rowsCount.addEventListener("change", (event) => {
 	renderData();
 	console.log(dataTable.rowsPerPage);
 });
+
 function renderData() {
+	pageNumberContainer.innerHTML = "";
+	let inputPageNumber = document.createElement("input");
+	let currentPageNumber =
+			Math.floor(dataTable.page / dataTable.rowsPerPage.value) + 1,
+		totalPage = Math.ceil(
+			dataTable.filteredData.length / dataTable.rowsPerPage.value,
+		);
+	inputPageNumber.type = "number";
+	inputPageNumber.value = currentPageNumber;
+	inputPageNumber.min = 1;
+	inputPageNumber.max = totalPage;
+	inputPageNumber.id = "pageNumberInput";
+	const text1 = document.createTextNode(` / ${totalPage}`);
+	pageNumberContainer.appendChild(inputPageNumber);
+	pageNumberContainer.appendChild(text1);
 	dataTable.renderData();
 }
 previousPageBtn.addEventListener("click", () => {
@@ -132,9 +153,7 @@ previousPageBtn.addEventListener("click", () => {
 	if (dataTable.page === 0) {
 		return; // already at first page
 	}
-
 	dataTable.page -= rowsPerPage;
-
 	if (dataTable.page < 0) {
 		dataTable.page = 0;
 	}
@@ -144,11 +163,12 @@ previousPageBtn.addEventListener("click", () => {
 nextPageBtn.addEventListener("click", () => {
 	let rowsPerPage = parseInt(rowsCount.value);
 
-	if (dataTable.page + rowsPerPage >= dataTable.parseJsonData.length) {
+	if (dataTable.page + rowsPerPage >= dataTable.filteredData.length) {
 		return; // already at last page
 	}
 
 	dataTable.page += rowsPerPage;
+
 	renderData();
 });
 
@@ -173,7 +193,7 @@ function parseCSVData() {
 	try {
 		dataTable.parseData(rawCSVData);
 		createColumnSelectionCheckbox();
-		dataTable.renderData();
+		renderData();
 	} catch (error) {
 		console.log(error.message);
 	}
@@ -194,3 +214,12 @@ function createColumnSelectionCheckbox() {
 		console.log(labelForColumn);
 	}
 }
+document.getElementById("page-number").addEventListener("change", (e) => {
+	if (e.target.id === "pageNumberInput") {
+		const page = Number(e.target.value);
+		console.log("Go to page:", page);
+		dataTable.page = (page - 1) * rowsPerPage.value;
+		renderData();
+	}
+	e.preventDefault();
+});

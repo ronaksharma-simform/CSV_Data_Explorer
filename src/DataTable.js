@@ -20,6 +20,8 @@ class DataTable {
 		this.lastSortColumnData = {};
 		this.selectedRowIndex = [];
 		this.isSelectMode = false;
+		this.curPage=1;
+		this.totalPage=0;
 	}
 	parseData(rawCSVData) {
 		const result = parseCSVData(rawCSVData);
@@ -62,7 +64,7 @@ class DataTable {
 			);
 		}
 		this.page = 0;
-		this.renderData();
+		
 	}
 	removeMultipleRows() {
 
@@ -72,6 +74,7 @@ class DataTable {
 		this.selectedRowIndex=[]
 		this.filteredData = this.parseJsonData;
 		this.page = 0;
+		this.isSelectMode=false
 		this.renderData();
 	}
 }
