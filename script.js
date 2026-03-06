@@ -1,4 +1,5 @@
 import DataTable from "./src/DataTable.js";
+import showDataModal from "./src/modalPanel.js";
 
 let fileInput = document.getElementById("dataset");
 let submitBtn = document.getElementById("submitBtn");
@@ -17,6 +18,7 @@ let deleteRowsButton = document.getElementById("deleteRows");
 let filterButton = document.getElementById("filterSubmit");
 let resetFilterButton = document.getElementById("resetFilter");
 let columnSelectionButton = document.getElementById("columnSelection");
+
 
 let columnsSelectionContainer = document.getElementById(
 	"columnsSelectionContainer",
@@ -97,7 +99,7 @@ showDataTable.addEventListener("click", (event) => {
 	}
 	if (clickedRow) {
 		console.log(dataTable.parseJsonData[clickedRow.dataset.id]);
-		console.log("Yes");
+		showDataModal(dataTable.parseJsonData[clickedRow.dataset.id-1])
 	}
 	// event.stopPropagation();
 });
@@ -139,8 +141,8 @@ function renderData() {
 		);
 	inputPageNumber.type = "number";
 	inputPageNumber.value = currentPageNumber;
-	inputPageNumber.min = 1;
-	inputPageNumber.max = totalPage;
+		inputPageNumber.min=1;
+		inputPageNumber.max=totalPage
 	inputPageNumber.id = "pageNumberInput";
 	const text1 = document.createTextNode(` / ${totalPage}`);
 	pageNumberContainer.appendChild(inputPageNumber);
@@ -198,6 +200,9 @@ function parseCSVData() {
 		console.log(error.message);
 	}
 }
+document.getElementById("closeModal").addEventListener("click",()=>{
+  document.getElementById("dataModal").style.display="none";
+});
 
 function createColumnSelectionCheckbox() {
 	for (let names of dataTable.columns) {
@@ -216,8 +221,13 @@ function createColumnSelectionCheckbox() {
 }
 document.getElementById("page-number").addEventListener("change", (e) => {
 	if (e.target.id === "pageNumberInput") {
-		const page = Number(e.target.value);
-		console.log("Go to page:", page);
+		let page = Number(e.target.value);
+		const totalPage = Math.ceil(
+			dataTable.filteredData.length / dataTable.rowsPerPage.value,
+		);
+		if(page<1)page=1
+		if(page>totalPage)page=totalPage
+		e.target.value=page
 		dataTable.page = (page - 1) * rowsPerPage.value;
 		renderData();
 	}
