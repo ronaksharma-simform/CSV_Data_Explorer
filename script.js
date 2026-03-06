@@ -1,5 +1,5 @@
 import DataTable from "./src/DataTable.js";
-import {exportDataAsCSV,exportDataAsJSON} from "./src/exportData.js";
+import { exportDataAsCSV, exportDataAsJSON } from "./src/exportData.js";
 import showDataModal from "./src/modalPanel.js";
 
 let fileInput = document.getElementById("dataset");
@@ -19,23 +19,34 @@ let deleteRowsButton = document.getElementById("deleteRows");
 let filterButton = document.getElementById("filterSubmit");
 let resetFilterButton = document.getElementById("resetFilter");
 let columnSelectionButton = document.getElementById("columnSelection");
-let exportJSON=document.getElementById("exportJSON")
-let exportCSV=document.getElementById("exportCSV")
+let exportJSON = document.getElementById("exportJSON");
+let exportCSV = document.getElementById("exportCSV");
 
 let columnsSelectionContainer = document.getElementById(
 	"columnsSelectionContainer",
 );
+
 deleteRowsButton.addEventListener("click", (event) => {
 	dataTable.removeMultipleRows();
+	deleteRowsButton.style.display = "none";
+	renderData();
 });
-exportCSV.addEventListener("click",(event)=>{
-	exportDataAsCSV(dataTable.columns,dataTable.filteredData)
-})
-exportJSON.addEventListener("click",(event)=>{
-	exportDataAsJSON(dataTable.filteredData)
-})
+exportCSV.addEventListener("click", (event) => {
+	exportDataAsCSV(dataTable.columns, dataTable.filteredData);
+});
+exportJSON.addEventListener("click", (event) => {
+	exportDataAsJSON(dataTable.filteredData);
+});
 let mainData = [];
-const dataTable = new DataTable(showDataTable, rowsPerPage);
+const previousState = localStorage.getItem("state") ?? "";
+
+const dataTable = new DataTable(
+	showDataTable,
+	rowsPerPage,
+	JSON.parse(previousState),
+);
+filterInput.value = dataTable.lastSearchQuery;
+renderData();
 showDataTable.addEventListener("contextmenu", function (e) {
 	e.preventDefault();
 });
@@ -52,11 +63,14 @@ columnSelectionButton.addEventListener("click", (event) => {
 });
 resetFilterButton.addEventListener("click", (event) => {
 	dataTable.filteredData = dataTable.parseJsonData;
+	dataTable.lastSearchQuery = "";
+	filterInput.value = "	";
 	dataTable.page = 0;
 	renderData();
 });
 filterButton.addEventListener("click", (event) => {
 	console.log(filterInput.value);
+
 	dataTable.filterColumnData(filterInput.value);
 	renderData();
 	event.stopImmediatePropagation();
@@ -93,28 +107,36 @@ showDataTable.addEventListener("click", (event) => {
 			}
 		}
 		console.log(dataTable.selectedRowIndex);
+	} else {
+		let clickedRow = event.target.closest(".row-data");
+		if (event.target.dataset.column) {
+			dataTable.sortColumnData(
+				event.target.dataset.column,
+				event.target.dataset.order,
+			);
+			dataTable.page = 0;
+			renderData();
+			// sortDataColumn(event.target.dataset.column, event.target.dataset.order);
+			return;
+		}
+		if (clickedRow) {
+			console.log(dataTable.parseJsonData[clickedRow.dataset.id]);
+			showDataModal(dataTable.parseJsonData[clickedRow.dataset.id - 1]);
+		}
 	}
-	let clickedRow = event.target.closest(".row-data");
-	if (event.target.dataset.column) {
-		dataTable.sortColumnData(
-			event.target.dataset.column,
-			event.target.dataset.order,
-		);
-		dataTable.page = 0;
-		renderData();
-		// sortDataColumn(event.target.dataset.column, event.target.dataset.order);
-		return;
-	}
-	if (clickedRow) {
-		console.log(dataTable.parseJsonData[clickedRow.dataset.id]);
-		showDataModal(dataTable.parseJsonData[clickedRow.dataset.id-1])
-	}
+
 	// event.stopPropagation();
 });
 showDataTable.addEventListener("mouseup", (event) => {
 	switch (event.button) {
 		case 0:
-			console.log("Left button clicked.");
+			let clickedRow = event.target.closest(".row-data");
+			if (clickedRow) {
+				console.log(dataTable.parseJsonData[clickedRow.dataset.id]);
+				showDataModal(
+					dataTable.parseJsonData[clickedRow.dataset.id - 1],
+				);
+			}
 			break;
 		case 1:
 			console.log("Middle button clicked.");
@@ -124,13 +146,13 @@ showDataTable.addEventListener("mouseup", (event) => {
 			console.log("Right button clicked.");
 			dataTable.isSelectMode =
 				dataTable.isSelectMode === false ? true : false;
-			renderData();
+
 			deleteRowsButton.style.display =
 				deleteRowsButton.style.display === "none" ||
 				deleteRowsButton.style.display === ""
 					? "inline-block"
 					: "none";
-
+			renderData();
 			break;
 	}
 });
@@ -149,8 +171,8 @@ function renderData() {
 		);
 	inputPageNumber.type = "number";
 	inputPageNumber.value = currentPageNumber;
-		inputPageNumber.min=1;
-		inputPageNumber.max=totalPage
+	inputPageNumber.min = 1;
+	inputPageNumber.max = totalPage;
 	inputPageNumber.id = "pageNumberInput";
 	const text1 = document.createTextNode(` / ${totalPage}`);
 	pageNumberContainer.appendChild(inputPageNumber);
@@ -208,8 +230,8 @@ function parseCSVData() {
 		console.log(error.message);
 	}
 }
-document.getElementById("closeModal").addEventListener("click",()=>{
-  document.getElementById("dataModal").style.display="none";
+document.getElementById("closeModal").addEventListener("click", () => {
+	document.getElementById("dataModal").style.display = "none";
 });
 
 function createColumnSelectionCheckbox() {
@@ -233,9 +255,9 @@ document.getElementById("page-number").addEventListener("change", (e) => {
 		const totalPage = Math.ceil(
 			dataTable.filteredData.length / dataTable.rowsPerPage.value,
 		);
-		if(page<1)page=1
-		if(page>totalPage)page=totalPage
-		e.target.value=page
+		if (page < 1) page = 1;
+		if (page > totalPage) page = totalPage;
+		e.target.value = page;
 		dataTable.page = (page - 1) * rowsPerPage.value;
 		renderData();
 	}
