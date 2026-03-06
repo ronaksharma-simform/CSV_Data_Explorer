@@ -1,3 +1,4 @@
+import { dateFormatString } from "./tableRender.js";
 export default function parseCSVData(rawCSVData) {
 	const parseJsonData = [];
 	const rowsOfData = rawCSVData.split("\n"); // splitting content on new line
@@ -10,7 +11,7 @@ export default function parseCSVData(rawCSVData) {
 			let currentColumnEntry = curColumnsData[i];
 			// current column data is Date
 			if (currentColumnEntry.match(/\d+-\d+-\d+/)) {
-				currentColumnEntry = parseDate(currentColumnEntry);
+				currentColumnEntry = dateFormatString(parseDate(currentColumnEntry));
 			}
 			// current column Data is Number
 			else if (currentColumnEntry.match(/^\d+(\.\d+)?$/)) {
