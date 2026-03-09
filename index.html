@@ -1,14 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="https://lunch-app.simform.solutions/Images/favicon.ico">
-    <link rel="stylesheet" href="style.css">
-    <title>CSV Data Explorer</title>
-</head>
-<body>
-    <h1>CSV Data Explorer</h1>
-    <script src="script.js"></script>
-</body>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link
+			rel="icon"
+			type="image/x-icon"
+			href="https://lunch-app.simform.solutions/Images/favicon.ico"
+		/>
+		<link rel="stylesheet" href="style.css" />
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+			integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+			crossorigin="anonymous"
+			referrerpolicy="no-referrer"
+		/>
+		<title>CSV Data Explorer</title>
+	</head>
+	<body>
+		<!-- Taking file as input -->
+		<h1>Data CSV Explorer Assessment</h1>
+		<input type="file" name="dataset" id="dataset" />
+		<button id="submitBtn">Submit</button>
+		<input
+			type="text"
+			placeholder="Enter Search Query"
+			id="filter"
+			name="filter"
+		/>
+		<!-- Reset filter -->
+		<button id="resetFilter">Reset</button>
+		<!-- Export document button -->
+		<button id="exportCSV">Export CSV</button>
+		<button id="exportJSON">Export JSON</button>
+		<!-- delete row button -->
+		<button id="deleteRows">Delete</button>
+		<br /><br />
+		<!-- button to show columns selection menu -->
+		<button id="columnSelection">Columns</button>
+		<!-- column selection container -->
+		<div id="columnsSelectionContainer"></div>
+		<!-- Rows per page count -->
+		<select name="rowsCount" id="rowsCount">
+			<option value="10">10</option>
+			<option value="20">20</option>
+			<option value="50">50</option>
+			<option value="100">100</option>
+		</select>
+		<button id="previous">Prev</button>
+		<!-- Page number rendering -->
+		<span id="page-number"></span>
+		<button id="next">Next</button>
+
+		<table id="showData"></table>
+		<!-- Data rendering-->
+		<!-- Modal Panel -->
+		<div id="dataModal" class="modal">
+			<div class="modal-content">
+				<span id="closeModal">&times;</span>
+				<div id="modalBody"></div>
+			</div>
+		</div>
+		<!-- Modal Panel Ends -->
+		<script src="script.js" type="module"></script>
+	</body>
 </html>
