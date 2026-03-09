@@ -1,5 +1,5 @@
 const sortDataColumn = (parseJsonData,columnName, order) => {
-	parseJsonData.sort((a, b) => {
+	const newSortedData=parseJsonData.toSorted((a, b) => {
 		const valueA = a[columnName];
 		const valueB = b[columnName];
 
@@ -11,6 +11,6 @@ const sortDataColumn = (parseJsonData,columnName, order) => {
 
 		return order === "ascending" ? valueA - valueB : valueB - valueA;
 	});
-    return parseJsonData;
+    return newSortedData;
 };    
 export default sortDataColumn;
