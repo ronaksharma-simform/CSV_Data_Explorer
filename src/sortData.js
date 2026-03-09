@@ -1,7 +1,7 @@
 const sortDataColumn = (parseJsonData,columnName, order) => {
 	parseJsonData.sort((a, b) => {
-		let valueA = a[columnName];
-		let valueB = b[columnName];
+		const valueA = a[columnName];
+		const valueB = b[columnName];
 
 		if (typeof valueA === "string" && typeof valueB === "string") {
 			return order === "ascending"

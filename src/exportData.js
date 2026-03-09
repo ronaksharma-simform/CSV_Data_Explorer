@@ -12,7 +12,7 @@ export const exportDataAsJSON = (data) => {
 	URL.revokeObjectURL(url);
 };
 export const exportDataAsCSV = (columns, data) => {
-	let csv = [];
+	const csv = [];
     // adding column names
 	csv.push(columns.join(","));
 

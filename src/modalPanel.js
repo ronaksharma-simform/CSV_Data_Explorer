@@ -22,6 +22,6 @@ const showDataModal = (data) => {
 		modalBody.appendChild(row);
 	});
 
-	modal.style.display = "block";
+	modal.style.display = "flex";
 };
 export default showDataModal;
