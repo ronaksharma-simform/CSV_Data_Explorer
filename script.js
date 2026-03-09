@@ -109,6 +109,8 @@ showDataTable.addEventListener("contextmenu", function (e) {
 
 // reset button event listener
 resetFilterButton.addEventListener("click", (event) => {
+	console.log("reset");
+	console.log(dataTable.parseJsonData)
 	dataTable.filteredData = dataTable.parseJsonData;
 	dataTable.lastSearchQuery = "";
 	filterInput.value = "";
