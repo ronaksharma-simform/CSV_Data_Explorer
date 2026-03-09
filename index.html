@@ -20,6 +20,7 @@
 	</head>
 	<body>
 		<!-- Taking file as input -->
+		<h1>Data CSV Explorer Assessment</h1>
 		<input type="file" name="dataset" id="dataset" />
 		<button id="submitBtn">Submit</button>
 		<input
@@ -28,23 +29,32 @@
 			id="filter"
 			name="filter"
 		/>
-		<button id="filterSubmit">Filter</button>
+		<!-- Reset filter -->
 		<button id="resetFilter">Reset</button>
+		<!-- Export document button -->
 		<button id="exportCSV">Export CSV</button>
 		<button id="exportJSON">Export JSON</button>
+		<!-- delete row button -->
 		<button id="deleteRows">Delete</button>
-		<h1>This is the text Element</h1>
+		<br /><br />
+		<!-- button to show columns selection menu -->
 		<button id="columnSelection">Columns</button>
+		<!-- column selection container -->
 		<div id="columnsSelectionContainer"></div>
+		<!-- Rows per page count -->
 		<select name="rowsCount" id="rowsCount">
 			<option value="10">10</option>
+			<option value="20">20</option>
 			<option value="50">50</option>
 			<option value="100">100</option>
 		</select>
 		<button id="previous">Prev</button>
+		<!-- Page number rendering -->
 		<span id="page-number"></span>
 		<button id="next">Next</button>
+
 		<table id="showData"></table>
+		<!-- Data rendering-->
 		<!-- Modal Panel -->
 		<div id="dataModal" class="modal">
 			<div class="modal-content">
@@ -52,6 +62,7 @@
 				<div id="modalBody"></div>
 			</div>
 		</div>
+		<!-- Modal Panel Ends -->
 		<script src="script.js" type="module"></script>
 	</body>
 </html>

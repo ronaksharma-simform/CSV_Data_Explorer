@@ -3,15 +3,15 @@ const filterData = (query, mainData, excludeColumns) => {
 		return mainData;
 	}
 
-	let filteredData = [];
+	const filteredData = [];
 
 	const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-	let Regex = new RegExp(escapedQuery, "ig");
+	const Regex = new RegExp(escapedQuery, "ig");
 
 	mainData.forEach((curRowData) => {
 		for (let key in curRowData) {
 			if (!excludeColumns.includes(key)) {
-				let value = curRowData[key];
+				const value = curRowData[key];
 
 				if (value !== null && value !== undefined) {
 					if (Regex.test(value.toString())) {

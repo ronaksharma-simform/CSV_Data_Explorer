@@ -11,7 +11,7 @@ export default function renderTable(
 ) {
 	// empty table content
 	tableElement.innerHTML = "";
-	renderingTableHeading(tableElement, column_names, hiddenColumn);
+	renderingTableHeading(tableElement, column_names, hiddenColumn,isSelectMode);
 	const rowsPerPage = parseInt(rowsCount.value);
 	const endRowCount = Math.min(startRowCount + rowsPerPage, data.length);
 
@@ -31,8 +31,18 @@ export const renderingTableHeading = (
 	tableElement,
 	column_names,
 	hiddenColumn,
+	isSelectMode
 ) => {
 	const currentRowElement = document.createElement("tr");
+	const selectionHeading = document.createElement("th");
+	selectionHeading.classList.add("heading-container");
+	if(isSelectMode){
+		selectionHeading.style.visibility="hidden"
+	}
+	else{
+		selectionHeading.style.display="none"
+	}
+	currentRowElement.appendChild(selectionHeading);
 	column_names.forEach((data) => {
 		if (!hiddenColumn.includes(data)) {
 			const currentColumnElement = document.createElement("th");
@@ -51,6 +61,7 @@ export const renderingTableHeading = (
 };
 export const sortingButton = (columnName) => {
 	const mainContainer = document.createElement("div");
+	mainContainer.classList.add("sorting-button-container")
 	const sortUpButton = document.createElement("i");
 	const sortDownButton = document.createElement("i");
 	sortDownButton.classList.add("fa-solid", "fa-sort-down");
@@ -74,10 +85,10 @@ export const renderRowsData = (
 	lastSearchQuery,
 ) => {
 	for (let idx = startRowCount; idx < endRowCount; idx++) {
-		let data = parseJsonData[idx];
-		let currentRowElement = document.createElement("tr");
+		const data = parseJsonData[idx];
+		const currentRowElement = document.createElement("tr");
 		currentRowElement.classList.add("row-data");
-		let selectionCheckbox = document.createElement("input");
+		const selectionCheckbox = document.createElement("input");
 		selectionCheckbox.type = "checkbox";
 
 		selectionCheckbox.style.display =
@@ -92,7 +103,7 @@ export const renderRowsData = (
 					selectionCheckbox.setAttribute("checked", "true");
 			}
 			if (!hiddenColumn.includes(key)) {
-				let currentColumnElement = document.createElement("td");
+				const currentColumnElement = document.createElement("td");
 				if (data[key] instanceof Date) {
 					currentColumnElement.innerHTML = highlightText(
 						dateFormatString(data[key]),
@@ -113,7 +124,7 @@ export const renderRowsData = (
 	}
 };
 export const dateFormatString = (dateObject) => {
-	let formattedString = `${dateObject.getDate()}-${dateObject.getMonth() + 1}-${dateObject.getFullYear()}`;
+	const formattedString = `${dateObject.getDate()}-${dateObject.getMonth() + 1}-${dateObject.getFullYear()}`;
 	return formattedString;
 };
 export const highlightText = (text, query) => {

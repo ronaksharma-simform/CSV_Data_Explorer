@@ -46,7 +46,7 @@ class DataTable {
 		this.storeDataLocally();
 	}
 	sortColumnData(columnName, order) {
-		this.parseJsonData = sortDataColumn(
+		this.filteredData = sortDataColumn(
 			this.filteredData,
 			columnName,
 			order,
