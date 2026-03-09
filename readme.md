@@ -39,19 +39,41 @@ This project is built strictly with **Vanilla JavaScript (ES6+), HTML, and CSS**
 
 ---
 
-## 🧩 Additional Features (≥4 as required)
+## 🧩 Additional Features
 
-This project includes **7 additional enhancements**:
+This project includes 7 additional enhancements:
 
-1. Column visibility selector
-2. Row deletion (single + bulk)
-3. Row detail modal panel
-4. Export filtered/visible data (CSV/JSON)
-5. Highlight matched search text
-6. Reset filters & sorting
+### Column visibility selector
+- Opens when you click the "Columns" button.
+- Shows a checklist of all columns; toggle any column to show/hide it in the table.
+- Changes apply immediately and affect visible row data.
+
+### Row deletion (single + bulk)
+- Right‑click a row (or right‑click the table area) to reveal selection checkboxes and a Delete button.
+- Select one or multiple rows via checkboxes, then click Delete to remove them.
+- Deletions update the current view (respecting filters, sorting, and pagination).
+
+### Row detail modal panel
+- Open a row's detail panel with a left click on the row.
+- Displays full row data in a modal/panel for easy inspection without altering the table.
+
+### Export filtered/visible data (CSV / JSON)
+- Export respects current filters and sort order.
+- Exports include only the rows currently shown by filtering and ordering and respect visible columns.
+
+### Highlight matched search text
+- Global search highlights all matching characters/terms inside table cells.
+- Case‑insensitive, partial matches highlighted across all visible columns.
+
+### Reset filters & sorting
+- "Reset" clears the global search, removes highlights, resets column sorting and selections, and returns pagination to the initial state.
+- Leaves the original raw dataset intact until explicit export or deletion.
+
+### Persistent Local Storage State 
+- Saves UI & progress to localStorage: selected columns, current page, sorting state, filters, and deleted rows.
+- On reload or revisit, the previous session state is restored automatically for a seamless experience.
 
 ---
-
 ## 📁 Folder Structure
 
 ```
