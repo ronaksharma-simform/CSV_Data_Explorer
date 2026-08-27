@@ -1,68 +1,194 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="color-scheme" content="light dark" />
 		<link
 			rel="icon"
 			type="image/x-icon"
 			href="https://lunch-app.simform.solutions/Images/favicon.ico"
 		/>
-		<link rel="stylesheet" href="style.css" />
+		<!-- Modern UI library: Bootstrap 5 -->
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+		/>
+		<!-- Icons -->
 		<link
 			rel="stylesheet"
-			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
-			integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 			crossorigin="anonymous"
 			referrerpolicy="no-referrer"
 		/>
+		<!-- Modern font -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="style.css" />
 		<title>CSV Data Explorer</title>
 	</head>
 	<body>
-		<!-- Taking file as input -->
-		<h1>Data CSV Explorer Assessment</h1>
-		<input type="file" name="dataset" id="dataset" />
-		<button id="submitBtn">Submit</button>
-		<input
-			type="text"
-			placeholder="Enter Search Query"
-			id="filter"
-			name="filter"
-		/>
-		<!-- Reset filter -->
-		<button id="resetFilter">Reset</button>
-		<!-- Export document button -->
-		<button id="exportCSV">Export CSV</button>
-		<button id="exportJSON">Export JSON</button>
-		<!-- delete row button -->
-		<button id="deleteRows">Delete</button>
-		<br /><br />
-		<!-- button to show columns selection menu -->
-		<button id="columnSelection">Columns</button>
-		<!-- column selection container -->
-		<div id="columnsSelectionContainer"></div>
-		<!-- Rows per page count -->
-		<select name="rowsCount" id="rowsCount">
-			<option value="10">10</option>
-			<option value="20">20</option>
-			<option value="50">50</option>
-			<option value="100">100</option>
-		</select>
-		<button id="previous">Prev</button>
-		<!-- Page number rendering -->
-		<span id="page-number"></span>
-		<button id="next">Next</button>
+		<!-- Header -->
+		<header class="app-header">
+			<div class="container d-flex align-items-center justify-content-between flex-wrap gap-3 py-3">
+				<div class="d-flex align-items-center gap-3">
+					<span class="app-logo"><i class="fa-solid fa-table-list"></i></span>
+					<div>
+						<h1 class="app-title mb-0">CSV Data Explorer</h1>
+						<p class="app-subtitle mb-0">Inspect, filter &amp; export your data — right in the browser</p>
+					</div>
+				</div>
+				<div class="d-flex align-items-center gap-2">
+					<span id="recordCount" class="badge record-count rounded-pill"></span>
+					<button
+						id="themeToggle"
+						type="button"
+						class="btn btn-icon"
+						title="Toggle dark / light mode"
+						aria-label="Toggle theme"
+					>
+						<i class="fa-solid fa-moon"></i>
+					</button>
+				</div>
+			</div>
+		</header>
 
-		<table id="showData"></table>
-		<!-- Data rendering-->
-		<!-- Modal Panel -->
-		<div id="dataModal" class="modal">
-			<div class="modal-content">
-				<span id="closeModal">&times;</span>
-				<div id="modalBody"></div>
+		<main class="container py-4">
+			<!-- Upload card -->
+			<section class="card app-card upload-card">
+				<div class="card-body">
+					<label for="dataset" id="uploadZone" class="upload-zone">
+						<input type="file" name="dataset" id="dataset" accept=".csv,text/csv" hidden />
+						<i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+						<span class="upload-title">Drop your CSV file here, or <u>browse</u></span>
+						<span id="fileName" class="upload-file">No file selected</span>
+					</label>
+					<div class="text-center mt-3">
+						<button id="submitBtn" class="btn btn-primary btn-lg px-4">
+							<i class="fa-solid fa-file-import me-2"></i>Load CSV
+						</button>
+					</div>
+				</div>
+			</section>
+
+			<!-- Toolbar card -->
+			<section class="card app-card toolbar-card">
+				<div class="card-body">
+					<div class="row g-2 align-items-center">
+						<div class="col-12 col-md-auto flex-grow-1">
+							<div class="input-group input-group-lg">
+								<span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+								<input
+									type="text"
+									class="form-control"
+									placeholder="Search across all columns…"
+									id="filter"
+									name="filter"
+									autocomplete="off"
+								/>
+								<button id="resetFilter" class="btn btn-outline-secondary" type="button" title="Reset filters &amp; sorting">
+									<i class="fa-solid fa-rotate-left me-md-2"></i><span class="d-none d-md-inline">Reset</span>
+								</button>
+							</div>
+						</div>
+						<div class="col-auto ms-md-auto">
+							<div class="d-flex flex-wrap gap-2 align-items-center">
+								<div class="btn-group">
+									<button id="exportCSV" class="btn btn-success" type="button" title="Export visible rows as CSV">
+										<i class="fa-solid fa-file-csv me-1"></i>CSV
+									</button>
+									<button id="exportJSON" class="btn btn-success" type="button" title="Export visible rows as JSON">
+										<i class="fa-solid fa-file-code me-1"></i>JSON
+									</button>
+								</div>
+								<button id="deleteRows" class="btn btn-danger" type="button" title="Delete selected rows">
+									<i class="fa-solid fa-trash me-1"></i>Delete
+								</button>
+								<div class="dropdown">
+									<button
+										id="columnSelection"
+										class="btn btn-outline-primary dropdown-toggle"
+										type="button"
+										data-bs-toggle="dropdown"
+										data-bs-auto-close="outside"
+										title="Show / hide columns"
+									>
+										<i class="fa-solid fa-columns me-1"></i>Columns
+									</button>
+									<div id="columnsSelectionContainer" class="dropdown-menu dropdown-menu-end column-menu p-2"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Data table card -->
+			<section class="card app-card table-card">
+				<div class="card-body">
+					<div class="table-responsive app-table-wrap">
+						<table id="showData" class="table app-table align-middle mb-0"></table>
+					</div>
+
+					<!-- Pagination footer -->
+					<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3">
+						<div class="d-flex align-items-center gap-2">
+							<label for="rowsCount" class="form-label small text-muted mb-0">Rows / page</label>
+							<select name="rowsCount" id="rowsCount" class="form-select form-select-sm w-auto">
+								<option value="10">10</option>
+								<option value="20">20</option>
+								<option value="50">50</option>
+								<option value="100">100</option>
+							</select>
+						</div>
+						<div class="d-flex align-items-center gap-2">
+							<button id="previous" class="btn btn-outline-secondary btn-sm px-3" type="button" title="Previous page">
+								<i class="fa-solid fa-chevron-left"></i>
+							</button>
+							<span id="page-number" class="page-number d-inline-flex align-items-center gap-1"></span>
+							<button id="next" class="btn btn-outline-secondary btn-sm px-3" type="button" title="Next page">
+								<i class="fa-solid fa-chevron-right"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<footer class="text-center text-muted small py-3">
+			Built with vanilla JS, Bootstrap 5 &amp; Font Awesome — 100% client-side.
+		</footer>
+
+		<!-- Loading overlay -->
+		<div id="loadingOverlay" class="loading-overlay">
+			<div class="loading-box">
+				<div class="spinner-border text-primary" role="status">
+					<span class="visually-hidden">Loading…</span>
+				</div>
+				<span class="ms-3">Parsing CSV…</span>
 			</div>
 		</div>
-		<!-- Modal Panel Ends -->
+
+		<!-- Row detail modal (Bootstrap) -->
+		<div id="dataModal" class="modal fade" tabindex="-1" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">
+							<i class="fa-solid fa-circle-info text-primary me-2"></i>Record Details
+						</h5>
+						<button type="button" id="closeModal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body" id="modalBody"></div>
+				</div>
+			</div>
+		</div>
+
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 		<script src="script.js" type="module"></script>
 	</body>
 </html>

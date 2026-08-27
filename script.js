@@ -3,6 +3,7 @@ import DataTable from "./src/DataTable.js";
 import debounce from "./src/debounce.js";
 import { exportDataAsCSV, exportDataAsJSON } from "./src/exportData.js";
 import showDataModal from "./src/modalPanel.js";
+
 // Selecting DOM Elements
 let rawCSVData = "";
 let fileInput = document.getElementById("dataset");
@@ -14,15 +15,69 @@ let nextPageBtn = document.getElementById("next");
 let rowsPerPage = document.getElementById("rowsCount");
 let filterInput = document.getElementById("filter");
 let deleteRowsButton = document.getElementById("deleteRows");
-let filterButton = document.getElementById("filterSubmit");
 let resetFilterButton = document.getElementById("resetFilter");
-let columnSelectionButton = document.getElementById("columnSelection");
 let exportJSON = document.getElementById("exportJSON");
 let exportCSV = document.getElementById("exportCSV");
 let columnsSelectionContainer = document.getElementById(
 	"columnsSelectionContainer",
 );
-// csv parse function
+let fileNameLabel = document.getElementById("fileName");
+let recordCount = document.getElementById("recordCount");
+let loadingOverlay = document.getElementById("loadingOverlay");
+let uploadZone = document.getElementById("uploadZone");
+let themeToggle = document.getElementById("themeToggle");
+
+// ---------- Theme ----------
+const savedTheme = localStorage.getItem("theme") || "light";
+document.documentElement.setAttribute("data-bs-theme", savedTheme);
+themeToggle.innerHTML =
+	savedTheme === "dark"
+		? '<i class="fa-solid fa-sun"></i>'
+		: '<i class="fa-solid fa-moon"></i>';
+themeToggle.addEventListener("click", () => {
+	const current =
+		document.documentElement.getAttribute("data-bs-theme") === "dark"
+			? "light"
+			: "dark";
+	document.documentElement.setAttribute("data-bs-theme", current);
+	themeToggle.innerHTML =
+		current === "dark"
+			? '<i class="fa-solid fa-sun"></i>'
+			: '<i class="fa-solid fa-moon"></i>';
+	localStorage.setItem("theme", current);
+});
+
+// ---------- Loading overlay ----------
+const showLoading = (isLoading) => {
+	loadingOverlay.classList.toggle("active", isLoading);
+};
+
+// ---------- Drag & drop upload ----------
+uploadZone.addEventListener("dragover", (event) => {
+	event.preventDefault();
+	uploadZone.classList.add("dragover");
+});
+uploadZone.addEventListener("dragleave", () => {
+	uploadZone.classList.remove("dragover");
+});
+uploadZone.addEventListener("drop", (event) => {
+	event.preventDefault();
+	uploadZone.classList.remove("dragover");
+	const files = event.dataTransfer.files;
+	if (files && files.length) {
+		const dataTransfer = new DataTransfer();
+		dataTransfer.items.add(files[0]);
+		fileInput.files = dataTransfer.files;
+		fileNameLabel.textContent = files[0].name;
+	}
+});
+fileInput.addEventListener("change", () => {
+	fileNameLabel.textContent = fileInput.files[0]
+		? fileInput.files[0].name
+		: "No file selected";
+});
+
+// ---------- CSV parse ----------
 function parseCSVData() {
 	try {
 		dataTable.parseData(rawCSVData);
@@ -32,123 +87,129 @@ function parseCSVData() {
 		console.log(error.message);
 	}
 }
-// function to render data
+
+// ---------- Render data ----------
 function renderData() {
 	pageNumberContainer.innerHTML = "";
+
+	const rowsPerPageValue = parseInt(rowsPerPage.value);
+	const total = dataTable.filteredData.length;
+	const totalPage = total === 0 ? 1 : Math.ceil(total / rowsPerPageValue);
+	const currentPageNumber = Math.floor(dataTable.page / rowsPerPageValue) + 1;
+	const startRow = Math.min(dataTable.page, total);
+	const endRow = Math.min(dataTable.page + rowsPerPageValue, total);
+
+	recordCount.textContent =
+		total > 0
+			? `Showing ${startRow + 1}–${endRow} of ${total}`
+			: "0 records";
+
 	let inputPageNumber = document.createElement("input");
-	let currentPageNumber =
-			Math.floor(dataTable.page / dataTable.rowsPerPage.value) + 1,
-		totalPage = Math.ceil(
-			dataTable.filteredData.length / dataTable.rowsPerPage.value,
-		);
-		console.log(totalPage)
-	if (totalPage === 0) totalPage = 1;
 	inputPageNumber.type = "number";
 	inputPageNumber.value = currentPageNumber;
 	inputPageNumber.min = 1;
 	inputPageNumber.max = totalPage;
 	inputPageNumber.id = "pageNumberInput";
-	const text1 = document.createTextNode(` / ${totalPage}`);
 	pageNumberContainer.appendChild(inputPageNumber);
-	pageNumberContainer.appendChild(text1);
+	pageNumberContainer.appendChild(document.createTextNode(` / ${totalPage}`));
+
+	previousPageBtn.disabled = dataTable.page === 0;
+	nextPageBtn.disabled = dataTable.page + rowsPerPageValue >= total;
+
 	dataTable.renderData();
 }
-// function to create column selection checkboc
+
+// ---------- Column selection checkboxes ----------
 function createColumnSelectionCheckbox() {
 	columnsSelectionContainer.innerHTML = "";
 	for (let names of dataTable.columns) {
 		let labelForColumn = document.createElement("label");
 		let checkboxForColumn = document.createElement("input");
-		labelForColumn.setAttribute("for", names);
 		checkboxForColumn.setAttribute("name", "columns");
 		checkboxForColumn.setAttribute("type", "checkbox");
 		checkboxForColumn.setAttribute("id", names);
 		checkboxForColumn.setAttribute("checked", true);
+		const columnName = document.createElement("span");
+		columnName.textContent = names.toUpperCase();
 		labelForColumn.appendChild(checkboxForColumn);
-		labelForColumn.innerHTML += names.toUpperCase();
+		labelForColumn.appendChild(columnName);
 		columnsSelectionContainer.appendChild(labelForColumn);
-		console.log(labelForColumn);
 	}
 }
-// debouncing for filter search query
+
+// Debouncing for filter search query
 const filteredDataFunction = (event) => {
 	dataTable.filterColumnData(filterInput.value);
 	renderData();
 	event.stopImmediatePropagation();
 };
 const debounceFilter = debounce(filteredDataFunction, 300);
+
 // Getting data from local storage if exists
 const previousState = localStorage.getItem("state") || "{}";
-// Initalizing the datatable class
+// Initializing the datatable class
 const dataTable = new DataTable(
 	showDataTable,
 	rowsPerPage,
 	JSON.parse(previousState),
 );
-// Inital Rendering for local storage data
+
+// Initial rendering for local storage data
 filterInput.value = dataTable.lastSearchQuery;
 renderData();
 createColumnSelectionCheckbox();
-// delete row event listener
+deleteRowsButton.style.display = "none";
+
+// Delete row event listener
 deleteRowsButton.addEventListener("click", (event) => {
 	dataTable.removeMultipleRows();
 	deleteRowsButton.style.display = "none";
 	renderData();
 });
-// export data event listener
+
+// Export data event listeners
 exportCSV.addEventListener("click", (event) => {
 	exportDataAsCSV(dataTable.columns, dataTable.filteredData);
 });
 exportJSON.addEventListener("click", (event) => {
 	exportDataAsJSON(dataTable.filteredData);
 });
-// prevent opening context menu on right click on whole data table container
+
+// Prevent opening context menu on right click on whole data table container
 showDataTable.addEventListener("contextmenu", function (e) {
 	e.preventDefault();
 });
 
-// reset button event listener
+// Reset button event listener
 resetFilterButton.addEventListener("click", (event) => {
-	console.log("reset");
-	console.log(dataTable.parseJsonData)
 	dataTable.filteredData = dataTable.parseJsonData;
 	dataTable.lastSearchQuery = "";
 	filterInput.value = "";
 	dataTable.page = 0;
 	renderData();
 });
-// filter input listener
+
+// Filter input listener
 filterInput.addEventListener("input", debounceFilter);
-// column selection container event listener
+
+// Column selection container event listener
 columnsSelectionContainer.addEventListener("click", (event) => {
 	if (event.target.tagName === "INPUT") {
 		let currentColumnName = event.target.id;
-		console.log(event.target);
 		if (dataTable.hiddenColumn.includes(currentColumnName)) {
 			dataTable.hiddenColumn.splice(
-				dataTable.hiddenColumn.findIndex((value) => currentColumnName),
+				dataTable.hiddenColumn.findIndex(
+					(value) => value === currentColumnName,
+				),
 				1,
 			);
-			console.log("dONE");
 		} else {
 			dataTable.hiddenColumn.push(currentColumnName);
 		}
-		console.log(dataTable.hiddenColumn);
 	}
 	renderData();
 });
-// column selection button event listener
-columnSelectionButton.addEventListener("click", (event) => {
-	let isHidden =
-		columnsSelectionContainer.style.display === "none" ||
-		columnsSelectionContainer.style.display === "";
-	console.log(columnsSelectionContainer.style.display);
-	if (isHidden) {
-		columnsSelectionContainer.style.display = "block";
-	} else {
-		columnsSelectionContainer.style.display = "none";
-	}
-});
+
 showDataTable.addEventListener("mouseup", (event) => {
 	event.stopPropagation();
 	let clickedRow = event.target.closest(".row-data");
@@ -166,7 +227,6 @@ showDataTable.addEventListener("mouseup", (event) => {
 						dataTable.selectedRowIndex.splice(findIndex, 1);
 					}
 				}
-				console.log(dataTable.selectedRowIndex);
 				return;
 			}
 
@@ -183,7 +243,6 @@ showDataTable.addEventListener("mouseup", (event) => {
 
 			// Row click -> open modal popup
 			if (clickedRow) {
-				console.log(dataTable.parseJsonData[clickedRow.dataset.id]);
 				showDataModal(
 					dataTable.parseJsonData[clickedRow.dataset.id - 1],
 				);
@@ -192,14 +251,11 @@ showDataTable.addEventListener("mouseup", (event) => {
 
 		// MIDDLE CLICK
 		case 1:
-			console.log("Middle button clicked.");
 			break;
 
 		// RIGHT CLICK
 		case 2:
 			dataTable.selectedRowIndex = [];
-			console.log("Right button clicked.");
-
 			dataTable.isSelectMode = !dataTable.isSelectMode;
 
 			deleteRowsButton.style.display =
@@ -212,20 +268,20 @@ showDataTable.addEventListener("mouseup", (event) => {
 			break;
 	}
 });
-// render data on rowsperpage change
+
+// Render data on rows per page change
 rowsCount.addEventListener("change", (event) => {
 	renderData();
-	console.log(dataTable.rowsPerPage);
 });
 
-// previous page and next button event listener
+// Previous page and next button event listeners
 previousPageBtn.addEventListener("click", () => {
-	let rowsPerPage = parseInt(rowsCount.value);
+	let rowsPerPageValue = parseInt(rowsCount.value);
 
 	if (dataTable.page === 0) {
 		return; // already at first page
 	}
-	dataTable.page -= rowsPerPage;
+	dataTable.page -= rowsPerPageValue;
 	if (dataTable.page < 0) {
 		dataTable.page = 0;
 	}
@@ -233,39 +289,43 @@ previousPageBtn.addEventListener("click", () => {
 	renderData();
 });
 nextPageBtn.addEventListener("click", () => {
-	let rowsPerPage = parseInt(rowsCount.value);
+	let rowsPerPageValue = parseInt(rowsCount.value);
 
-	if (dataTable.page + rowsPerPage >= dataTable.filteredData.length) {
+	if (dataTable.page + rowsPerPageValue >= dataTable.filteredData.length) {
 		return; // already at last page
 	}
 
-	dataTable.page += rowsPerPage;
+	dataTable.page += rowsPerPageValue;
 
 	renderData();
 });
-// file submit event listener
+
+// File submit event listener
 submitBtn.addEventListener("click", (event) => {
 	let curFileInput = fileInput.files[0];
-	console.log(curFileInput);
 	if (!curFileInput) {
-		throw new Error("File doesnt exist");
+		alert("Please choose a CSV file first.");
+		return;
 	}
 	const reader = new FileReader();
 	reader.onload = () => {
-		// showDataDiv.textContent = reader.result;
 		rawCSVData = reader.result;
-		parseCSVData();
+		showLoading(true);
+		setTimeout(() => {
+			try {
+				parseCSVData();
+			} finally {
+				showLoading(false);
+			}
+		}, 50);
 	};
 	reader.onerror = () => {
-		throw new Error("Error reading file please try again");
+		alert("Error reading file, please try again.");
 	};
 	reader.readAsText(curFileInput);
 });
-// close modal button event listener
-document.getElementById("closeModal").addEventListener("click", () => {
-	document.getElementById("dataModal").style.display = "none";
-});
-// page number input event listner
+
+// Page number input event listener
 document.getElementById("page-number").addEventListener("change", (e) => {
 	if (e.target.id === "pageNumberInput") {
 		let page = Number(e.target.value);
@@ -275,7 +335,7 @@ document.getElementById("page-number").addEventListener("change", (e) => {
 		if (page < 1) page = 1;
 		if (page > totalPage) page = totalPage;
 		e.target.value = page;
-		dataTable.page = (page - 1) * rowsPerPage.value;
+		dataTable.page = (page - 1) * parseInt(rowsPerPage.value);
 		renderData();
 	}
 	e.preventDefault();

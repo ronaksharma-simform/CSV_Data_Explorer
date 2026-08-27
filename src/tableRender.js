@@ -11,12 +11,19 @@ export default function renderTable(
 ) {
 	// empty table content
 	tableElement.innerHTML = "";
-	renderingTableHeading(tableElement, column_names, hiddenColumn,isSelectMode);
+
+	const thead = document.createElement("thead");
+	const tbody = document.createElement("tbody");
+	tableElement.appendChild(thead);
+	tableElement.appendChild(tbody);
+
+	renderingTableHeading(thead, column_names, hiddenColumn, isSelectMode);
+
 	const rowsPerPage = parseInt(rowsCount.value);
 	const endRowCount = Math.min(startRowCount + rowsPerPage, data.length);
 
 	renderRowsData(
-		tableElement,
+		tbody,
 		startRowCount,
 		endRowCount,
 		data,
@@ -25,32 +32,38 @@ export default function renderTable(
 		selectedRowIndex,
 		lastSearchQuery,
 	);
+
+	// Empty state
+	if (data.length === 0) {
+		const emptyRow = document.createElement("tr");
+		const emptyCell = document.createElement("td");
+		emptyCell.colSpan = column_names.length + 1;
+		emptyCell.className = "empty-state";
+		emptyCell.innerHTML = `<i class="fa-solid fa-inbox"></i> No data to display`;
+		emptyRow.appendChild(emptyCell);
+		tbody.appendChild(emptyRow);
+	}
 }
 
 export const renderingTableHeading = (
 	tableElement,
 	column_names,
 	hiddenColumn,
-	isSelectMode
+	isSelectMode,
 ) => {
 	const currentRowElement = document.createElement("tr");
 	const selectionHeading = document.createElement("th");
-	selectionHeading.classList.add("heading-container");
-	if(isSelectMode){
-		selectionHeading.style.visibility="hidden"
-	}
-	else{
-		selectionHeading.style.display="none"
-	}
+	selectionHeading.classList.add("selection-cell");
+	selectionHeading.style.display = isSelectMode ? "table-cell" : "none";
 	currentRowElement.appendChild(selectionHeading);
 	column_names.forEach((data) => {
 		if (!hiddenColumn.includes(data)) {
 			const currentColumnElement = document.createElement("th");
+			currentColumnElement.dataset.column = data;
 			const headingContainer = document.createElement("div");
 			headingContainer.classList.add("heading-container");
 			const columnNameContainer = document.createElement("div");
 			columnNameContainer.textContent = data;
-			currentColumnElement.dataset.column = data;
 			headingContainer.appendChild(columnNameContainer);
 			headingContainer.appendChild(sortingButton(data));
 			currentColumnElement.appendChild(headingContainer);
@@ -59,9 +72,10 @@ export const renderingTableHeading = (
 	});
 	tableElement.appendChild(currentRowElement);
 };
+
 export const sortingButton = (columnName) => {
 	const mainContainer = document.createElement("div");
-	mainContainer.classList.add("sorting-button-container")
+	mainContainer.classList.add("sorting-button-container");
 	const sortUpButton = document.createElement("i");
 	const sortDownButton = document.createElement("i");
 	sortDownButton.classList.add("fa-solid", "fa-sort-down");
@@ -70,10 +84,13 @@ export const sortingButton = (columnName) => {
 	sortDownButton.dataset.column = columnName;
 	sortUpButton.dataset.order = "ascending";
 	sortDownButton.dataset.order = "descending";
+	sortUpButton.title = "Sort ascending";
+	sortDownButton.title = "Sort descending";
 	mainContainer.appendChild(sortUpButton);
 	mainContainer.appendChild(sortDownButton);
 	return mainContainer;
 };
+
 export const renderRowsData = (
 	tableElement,
 	startRowCount,
@@ -88,13 +105,16 @@ export const renderRowsData = (
 		const data = parseJsonData[idx];
 		const currentRowElement = document.createElement("tr");
 		currentRowElement.classList.add("row-data");
+
+		const selectionCell = document.createElement("td");
+		selectionCell.classList.add("selection-cell");
+		selectionCell.style.display = isSelectMode ? "table-cell" : "none";
 		const selectionCheckbox = document.createElement("input");
 		selectionCheckbox.type = "checkbox";
-
-		selectionCheckbox.style.display =
-			isSelectMode === true ? "block" : "none";
 		selectionCheckbox.classList.add("selection-row");
-		currentRowElement.appendChild(selectionCheckbox);
+		selectionCell.appendChild(selectionCheckbox);
+		currentRowElement.appendChild(selectionCell);
+
 		for (let key in data) {
 			if (key === "id") {
 				selectionCheckbox.id = data[key];
@@ -109,7 +129,6 @@ export const renderRowsData = (
 						dateFormatString(data[key]),
 						lastSearchQuery,
 					);
-
 					currentRowElement.appendChild(currentColumnElement);
 					continue;
 				}
@@ -123,10 +142,12 @@ export const renderRowsData = (
 		tableElement.appendChild(currentRowElement);
 	}
 };
+
 export const dateFormatString = (dateObject) => {
 	const formattedString = `${dateObject.getDate()}-${dateObject.getMonth() + 1}-${dateObject.getFullYear()}`;
 	return formattedString;
 };
+
 export const highlightText = (text, query) => {
 	if (!query) return text;
 
